@@ -21,7 +21,7 @@ public:
 
   void Activate();
 
-  void Update(const SDL_Event &event);
+  void Update();
 
   void Draw();
 
@@ -46,7 +46,7 @@ public:
 
   void Activate();
 
-  void Update(const SDL_Event &event);
+  void Update();
 
   void Draw();
 
@@ -63,7 +63,7 @@ public:
 
   void Activate();
 
-  void Update(const SDL_Event &event);
+  void Update();
 
   void Draw();
 
@@ -81,7 +81,7 @@ public:
 
   void Activate();
 
-  void Update(const SDL_Event &event);
+  void Update();
 
   void Draw();
 

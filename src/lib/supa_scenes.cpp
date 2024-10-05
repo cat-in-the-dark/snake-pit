@@ -11,9 +11,9 @@ void ComboScene::Activate() {
     scene->Activate();
   }
 }
-void ComboScene::Update(const SDL_Event &event) {
+void ComboScene::Update() {
   for (auto &scene : scenes) {
-    scene->Update(event);
+    scene->Update();
   }
 }
 void ComboScene::Draw() {
@@ -32,11 +32,10 @@ KeyAwaitScene::KeyAwaitScene(SceneManager *sm, SDLKey key, std::string next)
 
 void KeyAwaitScene::Activate() {}
 
-void KeyAwaitScene::Update(const SDL_Event &event) {
-  if (event.type == SDL_KEYUP) {
-    if (event.key.keysym.sym == key) {
-      sm->Change(next);
-    }
+void KeyAwaitScene::Update() {
+  auto *keyState = SDL_GetKeyState(nullptr);
+  if (keyState[key]) {
+    sm->Change(next);
   }
 }
 
@@ -56,7 +55,7 @@ TextureScene::~TextureScene() {
 
 void TextureScene::Activate() {}
 
-void TextureScene::Update(const SDL_Event &event) {}
+void TextureScene::Update() {}
 
 void TextureScene::Draw() {
   SDL_BlitSurface(texture, nullptr, screen, nullptr);
@@ -69,7 +68,7 @@ TimerScene::TimerScene(SceneManager *sm, float seconds, std::string next)
 
 void TimerScene::Activate() { timer.Reset(); }
 
-void TimerScene::Update(const SDL_Event &event) {
+void TimerScene::Update() {
   auto ts1 = SDL_GetTicks();
   timer.Update(static_cast<float>(ts1 - ts));
   ts = ts1;

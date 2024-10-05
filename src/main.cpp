@@ -7,10 +7,15 @@
 #include "miyoo.h"
 #include "scenes/game_scene.h"
 
+#include <iostream>
+
 // Screen formatting
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 const int BITS_PER_PIXEL = 32;
+
+constexpr auto kTargetFrameRate = 60; // FPS
+constexpr auto kTargetFrameTime = 1000.0f / kTargetFrameRate;
 
 // Font formatting
 const int FONT_SIZE = 64;
@@ -48,11 +53,13 @@ int main(int argc, char **argv) {
       ->With<KeyAwaitScene>(&sm, miyoo::BTN_A, "game")
       ->With<TextureScene>(IMG_Load(imagePath), screen);
 
-  sm.Register<GameScene>("game", &sm);
+  sm.Register<GameScene>("game", &sm, screen);
 
   sm.Change("title");
 
   while (!done) {
+    auto ts1 = SDL_GetTicks();
+
     // clear screen
     SDL_FillRect(screen, nullptr,
                  SDL_MapRGB(screen->format, COLOR_WHITE.r, COLOR_WHITE.g,
@@ -61,8 +68,13 @@ int main(int argc, char **argv) {
     // poll for input
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
-      done = sm.Update(event);
+      if (event.type == SDL_QUIT) {
+        std::cout << "quit" << std::endl;
+        done = true;
+      }
     }
+
+    sm.Update();
 
     sm.Draw();
 
@@ -77,6 +89,16 @@ int main(int argc, char **argv) {
     // draw screen to vram
     SDL_BlitSurface(screen, nullptr, video, nullptr);
     SDL_Flip(video);
+
+    auto ts2 = SDL_GetTicks();
+
+    auto delta = ts2 - ts1;
+    if (delta >= kTargetFrameTime) {
+      std::cout << "Long run " << delta << std::endl;
+    } else {
+      auto sleepTime = kTargetFrameTime - delta;
+      SDL_Delay(sleepTime);
+    }
   }
 
   TTF_CloseFont(font);

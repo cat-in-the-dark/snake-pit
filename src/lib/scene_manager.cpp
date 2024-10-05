@@ -8,7 +8,7 @@ SceneManager::SceneManager() {}
 
 void SceneManager::Change(const std::string &name) { next = name; }
 
-bool SceneManager::Update(const SDL_Event& event) {
+bool SceneManager::Update() {
   if (current != next) {
     std::cout << "[INFO] change scene from '" << current << "' to '" << next
               << "'\n";
@@ -25,7 +25,7 @@ bool SceneManager::Update(const SDL_Event& event) {
   }
 
   if (scenes.count(current) != 0) {
-    scenes.at(current)->Update(event);
+    scenes.at(current)->Update();
     return false;
   }
 

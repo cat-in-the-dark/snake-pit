@@ -3,17 +3,21 @@
 # i.e., `apt install libsdl1.2-dev libsdl-image1.2 libsdl-mixer1.2 libsdl-ttf2.0`
 # then run `TARGET=ubuntu make` or `TARGET=miyoo make` as needed
 
+# TODO: make debug and release configs
+
 COMMON_INCLUDES = -Isrc
+COMMON_CXXFLAGS = $(COMMON_INCLUDES)
+# COMMON_CXXFLAGS = -O3 $(COMMON_INCLUDES)
 
 MIYOO_CXX := arm-linux-gnueabihf-g++
 MIYOO_PREFIX := /opt/miyoomini-toolchain/arm-linux-gnueabihf/libc
-MIYOO_CXXFLAGS := $(COMMON_INCLUDES) -I$(MIYOO_PREFIX)/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT
+MIYOO_CXXFLAGS := $(COMMON_CXXFLAGS) -I$(MIYOO_PREFIX)/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT
 MIYOO_LDFLAGS := -L$(MIYOO_PREFIX)/usr/lib -lSDL -lSDL_image -lSDL_ttf -lSDL_mixer -lpthread
 MIYOO_TARGET_EXEC := app.miyoo.bin
 
 UBUNTU_CXX := g++
 UBUNTU_PREFIX := /
-UBUNTU_CXXFLAGS := $(COMMON_INCLUDES) -I$(UBUNTU_PREFIX)/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT
+UBUNTU_CXXFLAGS := $(COMMON_CXXFLAGS) -I$(UBUNTU_PREFIX)/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT
 UBUNTU_LDFLAGS := -L$(UBUNTU_PREFIX)/usr/lib -lSDL -lSDL_image -lSDL_ttf -lSDL_mixer -lpthread
 UBUNTU_TARGET_EXEC := app.ubuntu.bin
 

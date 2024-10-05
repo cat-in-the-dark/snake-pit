@@ -26,7 +26,7 @@ public:
 
   void Change(const std::string &name);
 
-  bool Update(const SDL_Event& event);
+  bool Update();
 
   bool Draw();
 
