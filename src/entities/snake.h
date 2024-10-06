@@ -17,7 +17,7 @@ struct Tile {
 };
 
 inline bool operator==(const Tile &lhs, const Tile &rhs) {
-  return lhs.x == rhs.x && lhs.x == rhs.y;
+  return lhs.x == rhs.x && lhs.y == rhs.y;
 }
 
 constexpr auto kInvalidTile = Tile{kInvalidCoord, kInvalidCoord};
