@@ -7,6 +7,8 @@
 #include "miyoo.h"
 #include "scenes/game_scene.h"
 
+#include <sstream>
+
 #include <iostream>
 
 // Screen formatting
@@ -44,8 +46,6 @@ int main(int argc, char **argv) {
 
   // load resources
   TTF_Font *font = TTF_OpenFont(fontPath, FONT_SIZE);
-  SDL_Surface *text =
-      TTF_RenderUTF8_Shaded(font, "Hello world", COLOR_BLACK, COLOR_WHITE);
 
   SceneManager sm;
 
@@ -56,6 +56,8 @@ int main(int argc, char **argv) {
   sm.Register<GameScene>("game", &sm, screen);
 
   sm.Change("title");
+
+  auto key = static_cast<SDLKey>(0);
 
   while (!done) {
     auto ts1 = SDL_GetTicks();
@@ -69,14 +71,28 @@ int main(int argc, char **argv) {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
       if (event.type == SDL_QUIT) {
-        std::cout << "quit" << std::endl;
         done = true;
+      } else if (event.type == SDL_KEYDOWN) {
+        key = event.key.keysym.sym;
+        if (event.key.keysym.sym == miyoo::BTN_MENU) {
+          done = true;
+        }
       }
+    }
+
+    if (done) {
+      std::cout << "quit" << std::endl;
     }
 
     sm.Update();
 
     sm.Draw();
+
+    std::stringstream sstr;
+    sstr << "Key " << key;
+
+    SDL_Surface *text = TTF_RenderUTF8_Shaded(font, sstr.str().c_str(),
+                                              COLOR_BLACK, COLOR_WHITE);
 
     // to center the text we need to know how wide the text is
     SDL_Rect textCentered = {(Sint16)((SCREEN_WIDTH - text->w) / 2),
@@ -85,6 +101,8 @@ int main(int argc, char **argv) {
     // has too much height. This clips it down to a nice size.
     SDL_Rect textClipped = {0, 12, (Uint16)text->w, (Uint16)text->h};
     SDL_BlitSurface(text, &textClipped, screen, &textCentered);
+
+    SDL_FreeSurface(text);
 
     // draw screen to vram
     SDL_BlitSurface(screen, nullptr, video, nullptr);
@@ -103,7 +121,6 @@ int main(int argc, char **argv) {
 
   TTF_CloseFont(font);
 
-  SDL_FreeSurface(text);
   SDL_FreeSurface(screen);
   SDL_FreeSurface(video);
 

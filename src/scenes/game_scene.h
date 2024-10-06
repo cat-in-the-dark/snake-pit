@@ -4,16 +4,16 @@
 #include <SDL/SDL_video.h>
 
 #include <memory>
+#include <vector>
 
 #include "lib/scene.h"
 #include "lib/scene_manager.h"
+#include "lib/tasks/timer.h"
 
-constexpr auto kGameFieldWidth = 64; // tiles
-constexpr auto kGameFieldHeight = 48;
+#include "entities/game_world.h"
+#include "entities/snake.h"
 
 constexpr auto kTileSize = 10; // px
-
-enum class TileState { kEmpty, kP1 };
 
 class GameScene : public Scene {
 public:
@@ -28,13 +28,19 @@ public:
   virtual void Draw() override;
 
 private:
+  std::vector<Snake> snakes;
+
   SceneManager *sm_;
 
   std::unique_ptr<SDL_Surface> tile_tex_;
 
   SDL_Surface *screen_;
 
-  TileState gameFeild_[kGameFieldWidth][kGameFieldHeight];
+  Timer timer_;
+
+  uint32_t ts_;
+
+  GameWorld world_;
 };
 
 #endif /* GAME_SCENE_H */
