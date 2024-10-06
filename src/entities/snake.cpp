@@ -2,6 +2,15 @@
 
 #include <iostream>
 
+#include <map>
+#include <vector>
+
+static std::map<Direction, Direction> incompatibleDirections = {
+    {Direction::kUp, Direction::kDown},
+    {Direction::kDown, Direction::kUp},
+    {Direction::kLeft, Direction::kRight},
+    {Direction::kRight, Direction::kLeft}};
+
 Snake::Snake(uint32_t fieldWidth, uint32_t fieldHeight, PlayerKind playerKind,
              GameWorld *world)
     : fieldWidth_(fieldWidth), fieldHeight_(fieldHeight),
@@ -36,7 +45,13 @@ void Snake::moveTail() {
   }
 }
 
-void Snake::setDirection(Direction dir) { currentDir_ = dir; }
+void Snake::setDirection(Direction dir) {
+  if (incompatibleDirections[currentDir_] == dir) {
+    return;
+  }
+
+  currentDir_ = dir;
+}
 
 bool Snake::move() {
   auto next = nextTile(tiles.front(), currentDir_);
