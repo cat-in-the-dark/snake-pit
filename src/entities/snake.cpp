@@ -5,6 +5,8 @@
 #include <map>
 #include <vector>
 
+#include "game_world.h"
+
 static std::map<Direction, Direction> incompatibleDirections = {
     {Direction::kUp, Direction::kDown},
     {Direction::kDown, Direction::kUp},
@@ -14,7 +16,7 @@ static std::map<Direction, Direction> incompatibleDirections = {
 Snake::Snake(uint32_t fieldWidth, uint32_t fieldHeight, PlayerKind playerKind,
              GameWorld *world)
     : fieldWidth_(fieldWidth), fieldHeight_(fieldHeight),
-      playerKind(playerKind), tiles{}, world_(world) {}
+      playerKind(playerKind), tiles{}, world_(world), canSetDirection_{true} {}
 
 bool Snake::spawn(uint32_t startX, uint32_t startY, Direction startDirection,
                   size_t initLength) {
@@ -46,21 +48,37 @@ void Snake::moveTail() {
 }
 
 void Snake::setDirection(Direction dir) {
+  if (!canSetDirection_) {
+    return;
+  }
+
   if (incompatibleDirections[currentDir_] == dir) {
     return;
   }
 
   currentDir_ = dir;
+  canSetDirection_ = false;
 }
 
-bool Snake::move() {
+MoveResult Snake::move() {
+  canSetDirection_ = true;
+
   auto next = nextTile(tiles.front(), currentDir_);
   if (!isValidTile(next)) {
-    return false;
+    return MoveResult::kCollision;
+  }
+
+  if (!isEmptyTile(next)) {
+    if (isFoodTile(next)) {
+      tiles.push_front(next);
+      return MoveResult::kFoodTaken;
+    } else {
+      return MoveResult::kCollision;
+    }
   }
 
   tiles.push_front(next);
-  return true;
+  return MoveResult::kSuccess;
 }
 
 Tile Snake::nextTile(const Tile &tile, Direction dir) {
@@ -99,10 +117,27 @@ bool Snake::isValidTile(const Tile &tile) const {
     return false;
   }
 
-  if (world_->field[tile.x][tile.y].state != TileState::kEmpty) {
-    std::cout << "kek" << std::endl;
+  return true;
+}
+
+bool Snake::isEmptyTile(const Tile &tile) const {
+  if (!isValidTile(tile)) {
     return false;
   }
 
-  return true;
+  return world_->field[tile.x][tile.y].state == TileState::kEmpty;
+}
+
+bool Snake::isFoodTile(const Tile &tile) const {
+  if (!isValidTile(tile)) {
+    return false;
+  }
+
+  const auto &worldTile = world_->field[tile.x][tile.y];
+  if (worldTile.state == TileState::kFood &&
+      worldTile.occupiedBy == playerKind) {
+    return true;
+  }
+
+  return false;
 }

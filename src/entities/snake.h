@@ -5,16 +5,15 @@
 #include <cstdint>
 #include <deque>
 
-#include "game_world.h"
+#include "game_field.h"
+
+struct GameWorld;
 
 enum class Direction { kUp, kDown, kLeft, kRight };
 
-constexpr uint32_t kInvalidCoord = static_cast<uint32_t>(-1);
+enum class MoveResult { kSuccess, kCollision, kFoodTaken };
 
-struct Tile {
-  uint32_t x;
-  uint32_t y;
-};
+constexpr uint32_t kInvalidCoord = static_cast<uint32_t>(-1);
 
 inline bool operator==(const Tile &lhs, const Tile &rhs) {
   return lhs.x == rhs.x && lhs.y == rhs.y;
@@ -29,7 +28,7 @@ public:
   PlayerKind playerKind;
 
   Snake(uint32_t fieldWidth, uint32_t fieldHeight, PlayerKind playerKind,
-        GameWorld* field);
+        GameWorld *world);
 
   bool spawn(uint32_t startX, uint32_t startY, Direction startDirection,
              size_t initLength);
@@ -38,12 +37,16 @@ public:
 
   void setDirection(Direction dir);
 
-  bool move();
+  MoveResult move();
 
 private:
   Tile nextTile(const Tile &tile, Direction dir);
 
   bool isValidTile(const Tile &tile) const;
+
+  bool isEmptyTile(const Tile& tile) const;
+
+  bool isFoodTile(const Tile &tile) const;
 
   uint32_t fieldWidth_;
 
@@ -51,7 +54,9 @@ private:
 
   Direction currentDir_;
 
-  GameWorld* world_;
+  GameWorld *world_;
+
+  bool canSetDirection_;
 };
 
 #endif /* SNAKE_H */

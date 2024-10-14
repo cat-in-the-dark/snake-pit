@@ -9,9 +9,9 @@ constexpr auto BTN_A = SDLK_SPACE;
 
 constexpr auto BTN_B = SDLK_LCTRL;
 
-constexpr auto BTN_X = SDLK_LALT;
+constexpr auto BTN_X = SDLK_LSHIFT;
 
-constexpr auto BTN_Y = SDLK_LSHIFT;
+constexpr auto BTN_Y = SDLK_LALT;
 
 constexpr auto BTN_START = SDLK_RETURN;
 

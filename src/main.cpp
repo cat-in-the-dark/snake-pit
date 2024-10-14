@@ -19,12 +19,8 @@ const int BITS_PER_PIXEL = 32;
 constexpr auto kTargetFrameRate = 60; // FPS
 constexpr auto kTargetFrameTime = 1000.0f / kTargetFrameRate;
 
-// Font formatting
-const int FONT_SIZE = 64;
-
 // Resource paths
 const char *imagePath = "assets/img/battleback8.png";
-const char *fontPath = "assets/font/MMXSNES.ttf";
 
 const SDL_Color COLOR_WHITE = {255, 255, 255};
 const SDL_Color COLOR_BLACK = {0, 0, 0};
@@ -43,9 +39,6 @@ int main(int argc, char **argv) {
       SDL_HWSURFACE, SCREEN_WIDTH, SCREEN_HEIGHT, BITS_PER_PIXEL, 0, 0, 0, 0);
 
   bool done = false;
-
-  // load resources
-  TTF_Font *font = TTF_OpenFont(fontPath, FONT_SIZE);
 
   SceneManager sm;
 
@@ -88,22 +81,6 @@ int main(int argc, char **argv) {
 
     sm.Draw();
 
-    std::stringstream sstr;
-    sstr << "Key " << key;
-
-    SDL_Surface *text = TTF_RenderUTF8_Shaded(font, sstr.str().c_str(),
-                                              COLOR_BLACK, COLOR_WHITE);
-
-    // to center the text we need to know how wide the text is
-    SDL_Rect textCentered = {(Sint16)((SCREEN_WIDTH - text->w) / 2),
-                             (Sint16)((SCREEN_HEIGHT - text->h) / 2), 0, 0};
-    // TTF_RenderUTF8_Shaded puts a nice outlined box around our text, but it
-    // has too much height. This clips it down to a nice size.
-    SDL_Rect textClipped = {0, 12, (Uint16)text->w, (Uint16)text->h};
-    SDL_BlitSurface(text, &textClipped, screen, &textCentered);
-
-    SDL_FreeSurface(text);
-
     // draw screen to vram
     SDL_BlitSurface(screen, nullptr, video, nullptr);
     SDL_Flip(video);
@@ -119,13 +96,10 @@ int main(int argc, char **argv) {
     }
   }
 
-  TTF_CloseFont(font);
-
   SDL_FreeSurface(screen);
   SDL_FreeSurface(video);
 
   // shutdown
-  TTF_Quit();
   IMG_Quit();
   SDL_Quit();
 
