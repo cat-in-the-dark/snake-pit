@@ -1,17 +1,18 @@
-# Hello Miyoo
-A silly little demo for the Miyoo Mini
+# Snake pit
+
+Ludum Dare 56 unfinished entry
 --------------------------------------
-- Uses SDL 1.2 (yeah, someone should figure out how to port SDL2)
+
+![image](https://github.com/user-attachments/assets/7fba6ab3-0f6f-4e67-8103-893e7be0b062)
+
+
+- Uses SDL 1.2
 - Uses the awesome union toolchain https://github.com/shauninman/union-miyoomini-toolchain 
     - Clone that repo 
     - Clone this one into the workspace directory
+  
+Controls
+--------------------------------------
 
-Assets
-------
-All files in the assets directory are CC0 or Public Domain:
-
-- sfx/hop.wav: https://opengameart.org/content/8-bit-sound-effect-pack
-- bgm/Mars.wav: https://opengameart.org/content/nes-shooter-music-5-tracks-3-jingles
-- img/battleback8.png: https://opengameart.org/content/backgrounds-3
-- font/MMXSNES.ttf: https://nimblebeastscollective.itch.io/nb-pixel-font-bundle
-
+- Arrows: move
+- A/B/X/Y: switch between snakes
