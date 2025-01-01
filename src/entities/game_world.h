@@ -6,9 +6,12 @@
 #include "game_field.h"
 #include "snake.h"
 
+#include <map>
+#include <vector>
+
 struct GameWorld {
   GameField field;
-  std::vector<Snake> snakes;
+  std::map<PlayerKind, Snake> snakes;
   std::vector<Food> foods;
   int points;
 };

@@ -37,6 +37,10 @@ public:
 
   void setDirection(Direction dir);
 
+  void activate();
+
+  bool isPlayable() const;
+
   MoveResult move();
 
 private:
@@ -47,6 +51,8 @@ private:
   bool isEmptyTile(const Tile& tile) const;
 
   bool isFoodTile(const Tile &tile) const;
+
+  bool isPlayable_;
 
   uint32_t fieldWidth_;
 

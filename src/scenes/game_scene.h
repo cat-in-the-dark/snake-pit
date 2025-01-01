@@ -10,8 +10,8 @@
 
 #include "lib/scene.h"
 #include "lib/scene_manager.h"
-#include "lib/tasks/timer.h"
 #include "lib/tasks/predicate.h"
+#include "lib/tasks/timer.h"
 
 #include "entities/game_world.h"
 #include "entities/snake.h"
@@ -52,6 +52,9 @@ private:
   bool spawnFood(PlayerKind kind);
 
   bool spawnSnake(PlayerKind kind);
+
+  bool spawnSnakeAt(PlayerKind kind, Tile coords, Direction direction,
+                    size_t length);
 };
 
 #endif /* GAME_SCENE_H */

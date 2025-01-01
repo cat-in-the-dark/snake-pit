@@ -16,7 +16,8 @@ static std::map<Direction, Direction> incompatibleDirections = {
 Snake::Snake(uint32_t fieldWidth, uint32_t fieldHeight, PlayerKind playerKind,
              GameWorld *world)
     : fieldWidth_(fieldWidth), fieldHeight_(fieldHeight),
-      playerKind(playerKind), tiles{}, world_(world), canSetDirection_{true} {}
+      playerKind(playerKind), tiles{},
+      world_(world), canSetDirection_{true}, isPlayable_{false} {}
 
 bool Snake::spawn(uint32_t startX, uint32_t startY, Direction startDirection,
                   size_t initLength) {
@@ -59,6 +60,10 @@ void Snake::setDirection(Direction dir) {
   currentDir_ = dir;
   canSetDirection_ = false;
 }
+
+void Snake::activate() { isPlayable_ = true; }
+
+bool Snake::isPlayable() const { return isPlayable_; }
 
 MoveResult Snake::move() {
   canSetDirection_ = true;

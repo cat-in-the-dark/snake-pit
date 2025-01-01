@@ -35,24 +35,30 @@ void GameScene::Activate() {
 
   tasks_.push_back({[this]() { return world_.points >= 5; },
                     [this]() {
-                      spawnSnake(PlayerKind::p2);
+                      world_.snakes.at(PlayerKind::p2).activate();
                       spawnFood(PlayerKind::p2);
                     }});
 
   tasks_.push_back({[this]() { return world_.points >= 10; },
                     [this]() {
-                      spawnSnake(PlayerKind::p3);
+                      world_.snakes.at(PlayerKind::p3).activate();
                       spawnFood(PlayerKind::p3);
                     }});
 
-  tasks_.push_back({[this]() { return world_.points >= 20; },
+  tasks_.push_back({[this]() { return world_.points >= 15; },
                     [this]() {
-                      spawnSnake(PlayerKind::p4);
+                      world_.snakes.at(PlayerKind::p4).activate();
                       spawnFood(PlayerKind::p4);
                     }});
 
-  spawnSnake(PlayerKind::p1);
+  spawnSnakeAt(PlayerKind::p1, {0, 0}, Direction::kRight, 5);
+  spawnSnakeAt(PlayerKind::p2, {kGameFieldWidth - 1, 0}, Direction::kDown, 5);
+  spawnSnakeAt(PlayerKind::p3, {0, kGameFieldHeight - 1}, Direction::kUp, 5);
+  spawnSnakeAt(PlayerKind::p4, {kGameFieldWidth - 1, kGameFieldHeight - 1},
+               Direction::kLeft, 5);
+
   spawnFood(PlayerKind::p1);
+  world_.snakes.at(PlayerKind::p1).activate();
 }
 
 void GameScene::Exit() {}
@@ -72,11 +78,8 @@ void GameScene::Update() {
 
   for (auto &&activationKey : activationKeyMap_) {
     if (keyState[activationKey.first]) {
-      auto newSnake = std::find_if(
-          snakes.begin(), snakes.end(), [&activationKey](const Snake &snake) {
-            return snake.playerKind == activationKey.second;
-          });
-      if (newSnake != snakes.end()) {
+      auto &newSnake = snakes.at(activationKey.second);
+      if (newSnake.isPlayable()) {
         currentPlayer_ = activationKey.second;
         break;
       }
@@ -85,55 +88,52 @@ void GameScene::Update() {
 
   auto &foods = world_.foods;
 
-  auto currentSnake =
-      std::find_if(snakes.begin(), snakes.end(), [this](const Snake &snake) {
-        return snake.playerKind == currentPlayer_;
-      });
+  auto &currentSnake = world_.snakes.at(currentPlayer_);
 
-  if (currentSnake != snakes.end()) {
-    if (keyState[miyoo::BTN_UP]) {
-      currentSnake->setDirection(Direction::kUp);
-    } else if (keyState[miyoo::BTN_DOWN]) {
-      currentSnake->setDirection(Direction::kDown);
-    } else if (keyState[miyoo::BTN_LEFT]) {
-      currentSnake->setDirection(Direction::kLeft);
-    } else if (keyState[miyoo::BTN_RIGHT]) {
-      currentSnake->setDirection(Direction::kRight);
-    }
+  if (keyState[miyoo::BTN_UP]) {
+    currentSnake.setDirection(Direction::kUp);
+  } else if (keyState[miyoo::BTN_DOWN]) {
+    currentSnake.setDirection(Direction::kDown);
+  } else if (keyState[miyoo::BTN_LEFT]) {
+    currentSnake.setDirection(Direction::kLeft);
+  } else if (keyState[miyoo::BTN_RIGHT]) {
+    currentSnake.setDirection(Direction::kRight);
   }
 
   if (timer_.IsPassed()) {
     timer_.Reset();
 
-    snakes.erase(
-        std::remove_if(snakes.begin(), snakes.end(),
-                       [this, &foods](Snake &snake) {
-                         auto moveResult = snake.move();
-                         if (moveResult == MoveResult::kCollision) {
-                           return true;
-                         }
+    // move all snakes and erase all that collided
+    for (auto it = snakes.begin(); it != snakes.end();) {
+      auto &snake = it->second;
 
-                         if (moveResult == MoveResult::kFoodTaken) {
-                           world_.points++;
-                           auto coords = snake.tiles[0];
-                           foods.erase(
-                               std::remove_if(foods.begin(), foods.end(),
-                                              [&coords](const Food &food) {
-                                                if (food.coords == coords) {
-                                                  return true;
-                                                }
+      if (snake.isPlayable()) {
+        auto moveResult = snake.move();
+        if (moveResult == MoveResult::kCollision) {
+          it = snakes.erase(it);
+          continue;
+        }
 
-                                                return false;
-                                              }),
-                               foods.end());
-                           spawnFood(snake.playerKind);
-                         } else {
-                           snake.moveTail();
-                         }
+        if (moveResult == MoveResult::kFoodTaken) {
+          world_.points++;
+          auto coords = snake.tiles[0];
+          foods.erase(std::remove_if(foods.begin(), foods.end(),
+                                     [&coords](const Food &food) {
+                                       if (food.coords == coords) {
+                                         return true;
+                                       }
 
-                         return false;
-                       }),
-        snakes.end());
+                                       return false;
+                                     }),
+                      foods.end());
+          spawnFood(snake.playerKind);
+        } else {
+          snake.moveTail();
+        }
+      }
+
+      ++it;
+    }
 
     for (size_t y = 0; y < kGameFieldHeight; y++) {
       for (size_t x = 0; x < kGameFieldWidth; x++) {
@@ -142,9 +142,9 @@ void GameScene::Update() {
     }
 
     for (auto &&snake : snakes) {
-      for (auto &&tile : snake.tiles) {
+      for (auto &&tile : snake.second.tiles) {
         world_.field[tile.x][tile.y].state = TileState::kPlayer;
-        world_.field[tile.x][tile.y].occupiedBy = snake.playerKind;
+        world_.field[tile.x][tile.y].occupiedBy = snake.second.playerKind;
       }
     }
 
@@ -226,18 +226,24 @@ bool GameScene::spawnFood(PlayerKind kind) {
   return true;
 }
 
-bool GameScene::spawnSnake(PlayerKind kind) {
-  auto s1 = Snake{kGameFieldWidth, kGameFieldHeight, kind, &world_};
+bool GameScene::spawnSnakeAt(PlayerKind kind, Tile coords, Direction direction,
+                             size_t length) {
+  auto snake = Snake{kGameFieldWidth, kGameFieldHeight, kind, &world_};
 
+  if (!snake.spawn(coords.x, coords.y, direction, length)) {
+    return false;
+  }
+
+  world_.snakes.insert({kind, snake});
+
+  return true;
+}
+
+bool GameScene::spawnSnake(PlayerKind kind) {
   auto coords = getRandomFreeTile();
   if (coords == kInvalidTile) {
     return false;
   }
 
-  if (!s1.spawn(coords.x, coords.y, Direction::kRight, 5)) {
-    return false;
-  }
-
-  world_.snakes.push_back(s1);
-  return true;
+  return spawnSnakeAt(kind, coords, Direction::kRight, 5);
 }
