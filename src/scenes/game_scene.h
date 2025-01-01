@@ -31,6 +31,7 @@ public:
 private:
   SceneManager *sm_;
 
+  std::map<PlayerKind, SDL_Surface *> active_tile_textures_;
   std::map<PlayerKind, SDL_Surface *> tile_textures_;
 
   std::map<SDLKey, PlayerKind> activationKeyMap_;

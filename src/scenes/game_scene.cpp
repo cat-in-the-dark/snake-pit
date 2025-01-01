@@ -14,10 +14,16 @@ constexpr auto kGameStepTime = 200.0f;
 
 GameScene::GameScene(SceneManager *sm, SDL_Surface *screen)
     : sm_(sm), screen_(screen),
-      tile_textures_{{PlayerKind::p1, IMG_Load("assets/img/tile_r.png")},
-                     {PlayerKind::p2, IMG_Load("assets/img/tile_y.png")},
-                     {PlayerKind::p3, IMG_Load("assets/img/tile_b.png")},
-                     {PlayerKind::p4, IMG_Load("assets/img/tile_g.png")}},
+      active_tile_textures_{
+          {PlayerKind::p1, IMG_Load("assets/img/tile_r.png")},
+          {PlayerKind::p2, IMG_Load("assets/img/tile_y.png")},
+          {PlayerKind::p3, IMG_Load("assets/img/tile_b.png")},
+          {PlayerKind::p4, IMG_Load("assets/img/tile_g.png")}},
+      tile_textures_{
+          {PlayerKind::p1, IMG_Load("assets/img/tile_r_inactive.png")},
+          {PlayerKind::p2, IMG_Load("assets/img/tile_y_inactive.png")},
+          {PlayerKind::p3, IMG_Load("assets/img/tile_b_inactive.png")},
+          {PlayerKind::p4, IMG_Load("assets/img/tile_g_inactive.png")}},
       activationKeyMap_{{
           {miyoo::BTN_A, PlayerKind::p1},
           {miyoo::BTN_B, PlayerKind::p2},
@@ -28,6 +34,7 @@ GameScene::GameScene(SceneManager *sm, SDL_Surface *screen)
       currentPlayer_{PlayerKind::p1} {}
 
 void GameScene::Activate() {
+  world_.points = 0;
   world_.snakes.clear();
   world_.foods.clear();
   timer_.Reset();
@@ -78,8 +85,8 @@ void GameScene::Update() {
 
   for (auto &&activationKey : activationKeyMap_) {
     if (keyState[activationKey.first]) {
-      auto &newSnake = snakes.at(activationKey.second);
-      if (newSnake.isPlayable()) {
+      auto newSnake = snakes.find(activationKey.second);
+      if (newSnake != snakes.end() && newSnake->second.isPlayable()) {
         currentPlayer_ = activationKey.second;
         break;
       }
@@ -88,16 +95,20 @@ void GameScene::Update() {
 
   auto &foods = world_.foods;
 
-  auto &currentSnake = world_.snakes.at(currentPlayer_);
+  auto currentSnake = snakes.find(currentPlayer_);
 
-  if (keyState[miyoo::BTN_UP]) {
-    currentSnake.setDirection(Direction::kUp);
-  } else if (keyState[miyoo::BTN_DOWN]) {
-    currentSnake.setDirection(Direction::kDown);
-  } else if (keyState[miyoo::BTN_LEFT]) {
-    currentSnake.setDirection(Direction::kLeft);
-  } else if (keyState[miyoo::BTN_RIGHT]) {
-    currentSnake.setDirection(Direction::kRight);
+  if (currentSnake != snakes.end()) {
+    if (keyState[miyoo::BTN_UP]) {
+      currentSnake->second.setDirection(Direction::kUp);
+    } else if (keyState[miyoo::BTN_DOWN]) {
+      currentSnake->second.setDirection(Direction::kDown);
+    } else if (keyState[miyoo::BTN_LEFT]) {
+      currentSnake->second.setDirection(Direction::kLeft);
+    } else if (keyState[miyoo::BTN_RIGHT]) {
+      currentSnake->second.setDirection(Direction::kRight);
+    }
+  } else {
+    Activate();
   }
 
   if (timer_.IsPassed()) {
@@ -157,19 +168,23 @@ void GameScene::Update() {
 }
 
 void GameScene::Draw() {
-  SDL_Rect textCentered{};
-  textCentered.w = kTileSize;
-  textCentered.h = kTileSize;
+  SDL_Rect tileRect{};
+  tileRect.w = kTileSize;
+  tileRect.h = kTileSize;
 
   for (size_t y = 0; y < kGameFieldHeight; y++) {
     for (size_t x = 0; x < kGameFieldWidth; x++) {
       const auto &tile = world_.field[x][y];
       if (tile.state != TileState::kEmpty) {
-        textCentered.x = x * kTileSize;
-        textCentered.y = y * kTileSize;
+        tileRect.x = x * kTileSize;
+        tileRect.y = y * kTileSize;
 
-        SDL_BlitSurface(tile_textures_[tile.occupiedBy], nullptr, screen_,
-                        &textCentered);
+        auto texture = tile_textures_[tile.occupiedBy];
+        if (currentPlayer_ == tile.occupiedBy) {
+          texture = active_tile_textures_[tile.occupiedBy];
+        }
+
+        SDL_BlitSurface(texture, nullptr, screen_, &tileRect);
       }
     }
   }
