@@ -3,7 +3,7 @@
 Ludum Dare 56 unfinished entry
 --------------------------------------
 
-![image](https://github.com/user-attachments/assets/7fba6ab3-0f6f-4e67-8103-893e7be0b062)
+![snake_pid_demo](https://github.com/user-attachments/assets/912a9e3e-f293-456f-a5ee-eb4ce7806f6f)
 
 
 - Uses SDL 1.2
