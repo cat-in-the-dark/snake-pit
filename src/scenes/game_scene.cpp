@@ -40,9 +40,7 @@ GameScene::GameScene(SceneManager *sm, SDL_Surface *screen)
       currentPlayer_{PlayerKind::p1} {}
 
 void GameScene::Activate() {
-  world_.points = 0;
-  world_.snakes.clear();
-  world_.foods.clear();
+  world_ = {};
   timer_.Reset();
   tasks_.clear();
 
