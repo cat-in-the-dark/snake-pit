@@ -112,7 +112,10 @@ void GameScene::Update() {
         }
       }
     }
-  } else {
+  } else if (snakes.empty() ||
+             std::find_if(snakes.begin(), snakes.end(), [](const auto &it) {
+               return it.second.isPlayable();
+             }) == snakes.end()) {
     Activate();
   }
 
