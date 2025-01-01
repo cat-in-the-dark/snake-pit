@@ -30,6 +30,12 @@ GameScene::GameScene(SceneManager *sm, SDL_Surface *screen)
           {miyoo::BTN_X, PlayerKind::p3},
           {miyoo::BTN_Y, PlayerKind::p4},
       }},
+      directionMap_{{
+          {miyoo::BTN_UP, Direction::kUp},
+          {miyoo::BTN_DOWN, Direction::kDown},
+          {miyoo::BTN_LEFT, Direction::kLeft},
+          {miyoo::BTN_RIGHT, Direction::kRight},
+      }},
       world_{}, timer_{kGameStepTime}, ts_{SDL_GetTicks()},
       currentPlayer_{PlayerKind::p1} {}
 
@@ -98,14 +104,15 @@ void GameScene::Update() {
   auto currentSnake = snakes.find(currentPlayer_);
 
   if (currentSnake != snakes.end()) {
-    if (keyState[miyoo::BTN_UP]) {
-      currentSnake->second.setDirection(Direction::kUp);
-    } else if (keyState[miyoo::BTN_DOWN]) {
-      currentSnake->second.setDirection(Direction::kDown);
-    } else if (keyState[miyoo::BTN_LEFT]) {
-      currentSnake->second.setDirection(Direction::kLeft);
-    } else if (keyState[miyoo::BTN_RIGHT]) {
-      currentSnake->second.setDirection(Direction::kRight);
+    for (auto &&directionKey : directionMap_) {
+      if (keyState[directionKey.first]) {
+        if (currentSnake->second.getDirection() == directionKey.second) {
+          // Speed up snake movement 2x
+          timer_.Update(dt);
+        } else {
+          currentSnake->second.setDirection(directionKey.second);
+        }
+      }
     }
   } else {
     Activate();

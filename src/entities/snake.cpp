@@ -61,6 +61,8 @@ void Snake::setDirection(Direction dir) {
   canSetDirection_ = false;
 }
 
+Direction Snake::getDirection() const { return currentDir_; }
+
 void Snake::activate() { isPlayable_ = true; }
 
 bool Snake::isPlayable() const { return isPlayable_; }

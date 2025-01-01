@@ -37,6 +37,8 @@ public:
 
   void setDirection(Direction dir);
 
+  Direction getDirection() const;
+
   void activate();
 
   bool isPlayable() const;

@@ -35,6 +35,7 @@ private:
   std::map<PlayerKind, SDL_Surface *> tile_textures_;
 
   std::map<SDLKey, PlayerKind> activationKeyMap_;
+  std::map<SDLKey, Direction> directionMap_;
 
   SDL_Surface *screen_;
 
